@@ -50,7 +50,7 @@
         .nav-item span { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; margin-top: 6px; opacity: 0; transition: 0.3s; z-index: 2; letter-spacing: 0.5px;}
         .nav-item.active { color: #fff; background: linear-gradient(135deg, rgba(0,229,255,0.15), rgba(255,0,127,0.15)); border: 1px solid var(--glow-cyan); box-shadow: 0 0 15px rgba(255,0,127,0.3); }
         .nav-item.active span, .nav-item:hover span { opacity: 1; }
-        .nav-item[href="movies.html"] i { color: var(--pink-glow); font-size: 1.8rem; }
+        .nav-item[href="index.html"] i { color: var(--pink-glow); font-size: 1.8rem; }
 
         /* --- HEADER STRUCTURE --- */
         .main-wrapper { margin-left: var(--nav-width); width: calc(100% - var(--nav-width)); display: flex; flex-direction: column; padding-bottom: 90px; position: relative; min-height: 100vh; }
@@ -374,7 +374,7 @@
                     <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExam9peHVtbXl6anBvMW4zejVqeHVwaWxkdzRncjdzd21jcDVubTU5MiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lLcIAgKzN43UkupWt4/giphy.gif" alt="Entertainment">
                     <div class="wheel-container"><div class="wheel"></div><div class="wheel"></div></div>
                 </div>
-                <div class="engine focusable" tabindex="0" onclick="triggerNativeIntentRoute('go:KDKHOME')">
+                <div class="engine focusable" tabindex="0" onclick="triggerNativeIntentRoute('index.html')">
                     <div class="engine-smoke"></div>
                     <div class="engine-window"></div>
                     <div class="wheel-container"><div class="wheel"></div><div class="wheel"></div><div class="wheel"></div></div>
@@ -418,7 +418,7 @@
             <div class="rail-title-left"><h2 class="rail-title">TATA IPL 2026 - Live Score</h2></div>
             <div class="ipl-section-wrapper">
                 <div class="css-cheerleader left"><div class="css-pom-pom css-pom-left"></div><div class="css-cheer-head"></div><div class="css-cheer-body"></div><div class="css-pom-pom css-pom-right"></div></div>
-                <div class="ipl-widget-container focusable" tabindex="0" onclick="window.location.href='go:KDKSPORTS'">
+                <div class="ipl-widget-container focusable" tabindex="0" onclick="window.location.href='sports.html'">
                     <div class="match-anim-overlay" id="match-anim-overlay"></div>
                     <script src="https://cdorgapi.b-cdn.net/widgets/score.js"></script>
                 </div>
@@ -497,19 +497,19 @@
                 <div style="padding: 20px 5%;">
                     <div class="rail-title" style="justify-content: space-between;">
                         <div class="rail-title-left">Live TV Channels</div>
-                        <a href="go:KDKTV" class="view-all-btn focusable" tabindex="0">View All</a>
+                        <a href="tv.html" class="view-all-btn focusable" tabindex="0">View All</a>
                     </div>
                     <div class="scroller-row" id="lcoTvScroller" style="padding-left:0; padding-top:20px;"></div>
                     
                     <div class="rail-title" style="justify-content: space-between; margin-top:20px;">
                         <div class="rail-title-left">Blockbuster Movies</div>
-                        <a href="go:KDKMOVIES" class="view-all-btn focusable" tabindex="0">View All</a>
+                        <a href="movies.html" class="view-all-btn focusable" tabindex="0">View All</a>
                     </div>
                     <div class="scroller-row" id="lcoMoviesScroller" style="padding-left:0;"></div>
                     
                     <div class="rail-title" style="justify-content: space-between; margin-top:20px;">
                         <div class="rail-title-left">Trending Music</div>
-                        <a href="go:KDKMUSIC" class="view-all-btn focusable" tabindex="0">View All</a>
+                        <a href="music.html" class="view-all-btn focusable" tabindex="0">View All</a>
                     </div>
                     <div class="scroller-row" id="lcoMusicScroller" style="padding-left:0; padding-bottom:50px;"></div>
                 </div>
@@ -639,11 +639,11 @@
             const container = document.getElementById('dynamicNavContainer');
             // Initial setup anchoring Home in slot 3 (index 2) of 5
             const initialOrder = [
-                { id: 'nav-music', icon: 'fa-music', text: 'Music', intent: 'go:KDKMUSIC', active: false },
-                { id: 'nav-sports', icon: 'fa-trophy', text: 'Sports', intent: 'go:KDKSPORTS', active: false },
-                { id: 'nav-home', icon: 'fa-home', text: 'Home', intent: 'go:KDKHOME', active: true },
-                { id: 'nav-tv', icon: 'fa-tv', text: 'Live TV', intent: 'go:KDKTV', active: false },
-                { id: 'nav-movies', icon: 'fa-film', text: 'Movies', intent: 'go:KDKMOVIES', active: false }
+                { id: 'nav-music', icon: 'fa-music', text: 'Music', intent: 'music.html', active: false },
+                { id: 'nav-sports', icon: 'fa-trophy', text: 'Sports', intent: 'sports.html', active: false },
+                { id: 'nav-home', icon: 'fa-home', text: 'Home', intent: 'index.html', active: true },
+                { id: 'nav-tv', icon: 'fa-tv', text: 'Live TV', intent: 'tv.html', active: false },
+                { id: 'nav-movies', icon: 'fa-film', text: 'Movies', intent: 'movies.html', active: false }
             ];
 
             container.innerHTML = initialOrder.map((item, i) => `
@@ -760,7 +760,7 @@
                 localTvDB = tRows.map(r => ({
                     name: r.c[0] ? r.c[0].v.toString() : 'TV Channel',
                     logo: r.c[1] ? r.c[1].v.toString() : 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Star_Maa_Logo_2017.png/200px-Star_Maa_Logo_2017.png',
-                    url: 'go:KDKTV'
+                    url: 'tv.html'
                 }));
             } catch(e) { console.error("TV Pipeline Sync Error", e); }
 
@@ -774,7 +774,7 @@
                 localMusicDB = muRows.map(r => ({
                     title: r.c[0] ? r.c[0].v.toString() : 'Music Track',
                     poster: r.c[1] ? r.c[1].v.toString() : 'https://i.ibb.co/6R4pnJmB/image.png',
-                    url: 'go:KDKMUSIC'
+                    url: 'music.html'
                 }));
             } catch(e) { console.error("Music Pipeline Sync Error", e); }
         }
@@ -846,7 +846,7 @@
         function buildHomeMusicRail() {
             const scroller = document.getElementById('homeMusicScroller');
             const musicData = localMusicDB.length > 0 ? localMusicDB.slice(0, 10) : [
-                { title: "Trending Hit", poster: "https://i.ibb.co/6R4pnJmB/image.png", url: "go:KDKMUSIC" }
+                { title: "Trending Hit", poster: "https://i.ibb.co/6R4pnJmB/image.png", url: "music.html" }
             ];
             scroller.innerHTML = musicData.map((m, i) => `
                 <div class="music-rank-card focusable" tabindex="0" onclick="triggerNativeIntentRoute('${m.url}')">
@@ -862,7 +862,7 @@
         function buildHomeLiveTVRail() {
             const scroller = document.getElementById('homeTvScroller');
             const tvData = localTvDB.length > 0 ? localTvDB.slice(0, 12) : [
-                { name: "Star Maa", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Star_Maa_Logo_2017.png/200px-Star_Maa_Logo_2017.png", url: "go:KDKTV" }
+                { name: "Star Maa", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Star_Maa_Logo_2017.png/200px-Star_Maa_Logo_2017.png", url: "tv.html" }
             ];
             scroller.innerHTML = tvData.map(tv => `
                 <div class="retro-tv focusable" tabindex="0" onclick="window.location.href='${tv.url}'">
@@ -875,9 +875,9 @@
         function buildKidsCorner() {
             const scroller = document.getElementById('kidsScroller');
             const kids = localMovieDB.filter(m => m.category === 'Kids').slice(0,10);
-            const renderData = kids.length > 0 ? kids : [{ title: "Kids", poster: "https://m.media-amazon.com/images/M/MV5BMjQ1NjMzMDI1Ml5BMl5BanBnXkFtZTgwMDUyNjc1ODE@._V1_FMjpg_UX1000_.jpg", videoLink: "go:KDKMOVIES" }];
+            const renderData = kids.length > 0 ? kids : [{ title: "Kids", poster: "https://m.media-amazon.com/images/M/MV5BMjQ1NjMzMDI1Ml5BMl5BanBnXkFtZTgwMDUyNjc1ODE@._V1_FMjpg_UX1000_.jpg", videoLink: "movies.html" }];
             scroller.innerHTML = renderData.map(m => `
-                <div class="kids-card focusable" tabindex="0" onclick="${m.videoLink && !m.videoLink.startsWith('go:') ? `executeDirectDynamicEcosystemPlayer('${m.videoLink}', '${m.title.replace(/'/g, "\\'")}')` : `window.location.href='${m.videoLink || 'go:KDKMOVIES'}'`}">
+                <div class="kids-card focusable" tabindex="0" onclick="${m.videoLink && m.videoLink !== '#' ? `executeDirectDynamicEcosystemPlayer('${m.videoLink}', '${m.title.replace(/'/g, "\\'")}')` : `window.location.href='movies.html'`}">
                     <img src="${m.poster}" class="kids-poster">
                     <div class="kids-mickey-frame"></div>
                 </div>
