@@ -183,7 +183,7 @@
         .fp-body { flex: 1; display: grid; grid-template-columns: 1fr; gap: 30px; padding: 20px; overflow-y: auto; }
         @media (min-width: 768px) { .fp-body { grid-template-columns: 1fr 1fr; padding: 40px; align-items: center; } }
 
-        /* CLEAN STATIC ARTWORK FRAME (REMOVING UNNECESSARY LOGO BACK) */
+        /* CLEAN STATIC ARTWORK FRAME */
         .fp-art-container { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; max-width: 350px; aspect-ratio: 1; margin: 0 auto; }
         .fp-art-single { width: 100%; height: 100%; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.5); object-fit: cover; border: 1px solid rgba(255,255,255,0.1); }
 
@@ -316,7 +316,7 @@
                 </div>
             </div>
             
-            <div class="logo-section focusable" tabindex="0" onclick="loadHome()">
+            <div class="logo-section focusable" tabindex="0" onclick="window.location.href='index.html'">
                 <div class="logo-container">
                     <img src="https://i.ibb.co/6R4pnJmB/image.png" alt="KDK Music">
                     <span class="logo-text">KDK MUSIC</span>
@@ -542,11 +542,7 @@
                 }, 2500);
             } else {
                 clearTimeout(backPressTimer);
-                if (typeof AppCreator24 !== 'undefined' && AppCreator24.exitApp) {
-                    AppCreator24.exitApp();
-                } else {
-                    window.close();
-                }
+                window.close();
             }
         });
     }
@@ -588,11 +584,11 @@
     function initCircularNav() {
         const container = document.getElementById('dynamicNavContainer');
         const initialOrder = [
-            { id: 'nav-tv', icon: 'fa-tv', text: 'Live TV', intent: 'go:KDKTV', active: false },
-            { id: 'nav-movies', icon: 'fa-film', text: 'Movies', intent: 'go:KDKMOVIES', active: false },
-            { id: 'nav-music', icon: 'fa-music', text: 'Music', intent: 'go:KDKMUSIC', active: true },
-            { id: 'nav-sports', icon: 'fa-trophy', text: 'Sports', intent: 'go:KDKSPORTS', active: false },
-            { id: 'nav-home', icon: 'fa-home', text: 'Home', intent: 'go:KDKHOME', active: false }
+            { id: 'nav-tv', icon: 'fa-tv', text: 'Live TV', intent: 'tv.html', active: false },
+            { id: 'nav-movies', icon: 'fa-film', text: 'Movies', intent: 'movies.html', active: false },
+            { id: 'nav-music', icon: 'fa-music', text: 'Music', intent: 'music.html', active: true },
+            { id: 'nav-sports', icon: 'fa-trophy', text: 'Sports', intent: 'sports.html', active: false },
+            { id: 'nav-home', icon: 'fa-home', text: 'Home', intent: 'index.html', active: false }
         ];
 
         container.innerHTML = initialOrder.map((item, i) => `
@@ -710,8 +706,6 @@
             showToast("Removed from Favorites");
         }
         localStorage.setItem(`KDK_music_favs_${activeProfile}`, JSON.stringify(favorites));
-        
-        // Also sync with playlist to keep ecosystem logic whole
         toggleCurrentSongInPlaylist(true); 
     }
 
@@ -732,7 +726,7 @@
     window.addEventListener('load', () => {
         initCircularNav();
         initLanguages();
-        initHardwareBackButtonManager(); // INITIALIZE NEW BACK BUTTON LOGIC
+        initHardwareBackButtonManager(); 
         
         if(localStorage.getItem('kdk_p1_alias')) document.getElementById('p1-name').innerText = localStorage.getItem('kdk_p1_alias');
         if(localStorage.getItem('kdk_p2_alias')) document.getElementById('p2-name').innerText = localStorage.getItem('kdk_p2_alias');
@@ -832,7 +826,6 @@
 
         let html = '';
         
-        // Add Favorites Section if exists
         if(favorites.length > 0) {
             html += `<div class="section-header"><h2 class="section-title">My Favorites</h2></div>
                      <div class="scroll-container" id="container-Favorites"><div class="spinner"></div></div>`;
@@ -920,7 +913,6 @@
         } catch(e) { showToast("Error loading album."); }
     }
 
-    // Playback Engine + Lock Screen Notification Integration
     window.playSong = function(songOrIndex, isFromTempAlbum = false) {
         let song = typeof songOrIndex === 'number' ? window.tempAlbumSongs[songOrIndex] : songOrIndex;
         let playlist = typeof songOrIndex === 'number' ? window.tempAlbumSongs : JSON.parse(document.querySelector(`[data-item*='${song.id}']`)?.dataset.list || "[]");
@@ -937,12 +929,11 @@
                 isPlaying = true; 
                 updatePlayBtns(); 
                 renderQueue(); 
-                initMediaSession(song); // Bind Metadata notification row controls
+                initMediaSession(song); 
             }).catch(e => showToast("Audio Error"));
         }
     };
 
-    // SYSTEM MEDIA NOTIFICATION SYNC ENGINE
     function initMediaSession(song) {
         if ('mediaSession' in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
@@ -971,7 +962,6 @@
         document.getElementById('fpArtBig').src = song.image;
         document.getElementById('fpArtistList').innerHTML = song.artist;
         
-        // Update Heart Icon based on Profile Favorites
         const isFav = favorites.some(s => s.id === song.id);
         const btnIcon = document.getElementById('likeIcon');
         if(isFav) { btnIcon.className = 'ri-heart-fill'; btnIcon.style.color = 'var(--primary)'; } 
@@ -1019,7 +1009,6 @@
         refreshFocusNodesPool();
     }
 
-    // Track Seek Bars Listeners
     audio.addEventListener('timeupdate', () => {
         if(audio.duration) {
             const pct = (audio.currentTime / audio.duration) * 100;
@@ -1036,7 +1025,6 @@
         audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
     });
 
-    // Search Engine Filter Mapping
     let searchTimeout;
     searchInput.addEventListener('input', e => {
         clearTimeout(searchTimeout);
@@ -1051,7 +1039,6 @@
         }, 500);
     });
 
-    // Playlist Config
     function togglePlaylistView() {
         isViewingPlaylist = !isViewingPlaylist;
         if(isViewingPlaylist) {
@@ -1091,7 +1078,6 @@
         togglePlaylistView(); showToast("Removed from Playlist");
     };
 
-    // Context Menus Mapping
     let ctxSong, ctxList;
     window.openContextMenu = function(e, type) {
         e.stopPropagation();
