@@ -33,7 +33,7 @@
         .auth-input:focus { border-color: var(--pink-glow); box-shadow: 0 0 10px var(--pink-glow);}
         .auth-btn { background: linear-gradient(90deg, var(--glow-cyan), var(--pink-glow)); color: #fff; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 900; font-size: 1.1rem; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
         .vip-btn { background: linear-gradient(90deg, #ffcc00, #ff007f); color: #fff; border: none; padding: 12px; width: 100%; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 15px; }
-        .skip-btn { background: transparent; color: #8b9bb4; border: none; font-weight: 600; cursor: pointer; text-decoration: underline; }
+        .skip-btn { background: transparent; color: #8b9bb4; border: none; font-weight: 600; cursor: pointer; text-decoration: underline; margin-top: 10px; }
 
         /* --- TV REMOTE FOCUS ENGINE --- */
         .focusable { transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; outline: none; cursor: pointer; border-radius: 12px; border: 2px solid transparent; }
@@ -50,7 +50,7 @@
         .nav-item span { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; margin-top: 6px; opacity: 0; transition: 0.3s; z-index: 2; letter-spacing: 0.5px;}
         .nav-item.active { color: #fff; background: linear-gradient(135deg, rgba(0,229,255,0.15), rgba(255,0,127,0.15)); border: 1px solid var(--glow-cyan); box-shadow: 0 0 15px rgba(255,0,127,0.3); }
         .nav-item.active span, .nav-item:hover span { opacity: 1; }
-        .nav-item[href="index.html"] i { color: var(--pink-glow); font-size: 1.8rem; }
+        .nav-item.active i { color: var(--pink-glow); font-size: 1.8rem; }
 
         /* --- HEADER STRUCTURE --- */
         .main-wrapper { margin-left: var(--nav-width); width: calc(100% - var(--nav-width)); display: flex; flex-direction: column; padding-bottom: 90px; position: relative; min-height: 100vh; }
@@ -311,6 +311,7 @@
             <input type="number" class="auth-input" id="authAge" placeholder="Age (e.g. 21)">
             <button class="auth-btn focusable" tabindex="0" onclick="submitAuth()">Verify & Enter</button>
             <button class="vip-btn focusable" tabindex="0" onclick="alert('VIP Subscription Portal Opening...')"><i class="fas fa-crown"></i> Get Ad-Free VIP</button>
+            <button class="skip-btn focusable" tabindex="0" onclick="skipAuth()">Skip for now</button>
         </div>
     </div>
 
@@ -318,7 +319,7 @@
 
     <nav class="side-nav">
         <div class="nav-center-group" id="dynamicNavContainer">
-            </div>
+        </div>
     </nav>
 
     <div class="main-wrapper">
@@ -350,31 +351,31 @@
         <div id="trainContainer" class="train-container">
             <div class="train-track"></div>
             <div class="train-wrapper">
-                <div class="guard-cabin focusable" tabindex="0" onclick="triggerNativeIntentRoute('index.html')">
+                <div class="guard-cabin focusable" tabindex="0" onclick="window.location.href='index.html'">
                     <div class="guard-window"></div>
                     <div class="wheel-container"><div class="wheel"></div><div class="wheel"></div></div>
                 </div>
-                <div class="bogie focusable" tabindex="0" onclick="triggerNativeIntentRoute('sports.html')">
+                <div class="bogie focusable" tabindex="0" onclick="window.location.href='sports.html'">
                     <img src="https://i.ibb.co/hxvgYH2F/image.png" alt="Sports">
                     <div class="wheel-container"><div class="wheel"></div><div class="wheel"></div></div>
                 </div>
-                <div class="bogie focusable" tabindex="0" onclick="triggerNativeIntentRoute('tv.html')">
+                <div class="bogie focusable" tabindex="0" onclick="window.location.href='tv.html'">
                     <img src="https://i.ibb.co/QFmzb8zv/image.png" alt="TV">
                     <div class="wheel-container"><div class="wheel"></div><div class="wheel"></div></div>
                 </div>
-                <div class="bogie focusable" tabindex="0" onclick="triggerNativeIntentRoute('music.html')">
+                <div class="bogie focusable" tabindex="0" onclick="window.location.href='music.html'">
                     <img src="https://i.ibb.co/6R4pnJmB/image.png" alt="Music">
                     <div class="wheel-container"><div class="wheel"></div><div class="wheel"></div></div>
                 </div>
-                <div class="bogie focusable" tabindex="0" onclick="triggerNativeIntentRoute('movies.html')">
+                <div class="bogie focusable" tabindex="0" onclick="window.location.href='movies.html'">
                     <img src="https://i.ibb.co/qY3S366s/Gemini-Generated-Image-qzjufaqzjufaqzju.png" alt="Movies">
                     <div class="wheel-container"><div class="wheel"></div><div class="wheel"></div></div>
                 </div>
-                <div class="bogie focusable" tabindex="0" onclick="triggerNativeIntentRoute('index.html')">
+                <div class="bogie focusable" tabindex="0" onclick="window.location.href='index.html'">
                     <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExam9peHVtbXl6anBvMW4zejVqeHVwaWxkdzRncjdzd21jcDVubTU5MiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lLcIAgKzN43UkupWt4/giphy.gif" alt="Entertainment">
                     <div class="wheel-container"><div class="wheel"></div><div class="wheel"></div></div>
                 </div>
-                <div class="engine focusable" tabindex="0" onclick="triggerNativeIntentRoute('index.html')">
+                <div class="engine focusable" tabindex="0" onclick="window.location.href='index.html'">
                     <div class="engine-smoke"></div>
                     <div class="engine-window"></div>
                     <div class="wheel-container"><div class="wheel"></div><div class="wheel"></div><div class="wheel"></div></div>
@@ -432,10 +433,10 @@
             <h2 style="color:var(--glow-cyan); font-size:2rem; font-weight:900; margin-bottom:10px;">Select Language</h2>
             <p style="color:#8b9bb4; margin-bottom:30px;">Choose your favored commentary language feed stream:</p>
             <div class="lang-picker-grid">
-                <div class="lang-opt-card focusable" tabindex="0" onclick="triggerNativeIntentRoute('go:TEL')">Telugu</div>
-                <div class="lang-opt-card focusable" tabindex="0" onclick="triggerNativeIntentRoute('go:HIN')">Hindi</div>
-                <div class="lang-opt-card focusable" tabindex="0" onclick="triggerNativeIntentRoute('go:ENG')">English</div>
-                <div class="lang-opt-card focusable" tabindex="0" onclick="triggerNativeIntentRoute('go:TAM')">Tamil</div>
+                <div class="lang-opt-card focusable" tabindex="0" onclick="playWebLink('TEL')">Telugu</div>
+                <div class="lang-opt-card focusable" tabindex="0" onclick="playWebLink('HIN')">Hindi</div>
+                <div class="lang-opt-card focusable" tabindex="0" onclick="playWebLink('ENG')">English</div>
+                <div class="lang-opt-card focusable" tabindex="0" onclick="playWebLink('TAM')">Tamil</div>
             </div>
             <button class="player-back-btn focusable" tabindex="0" onclick="toggleModal('')" style="margin-top:40px; width:100%;">← Return to Dashboard</button>
         </div>
@@ -530,10 +531,12 @@
         const MOVIE_API = "https://docs.google.com/spreadsheets/d/1WNVjP_UUchqeNCC1-heAe_H-JhwMEP8uhUyPo4oqFm0/gviz/tq?tqx=out:json";
         const MUSIC_API = "https://docs.google.com/spreadsheets/d/12dcjSnHz7eIZ9Ejvyc4kYZNOfj3Z-8Q09TeglqegDHM/gviz/tq?tqx=out:json";
         const TV_API = "https://docs.google.com/spreadsheets/d/1bvPxXCGQ6kdTCoUB1xMAodT5tgC_-_J84_G_LhnV3NQ/gviz/tq?tqx=out:json";
+        const WEB_LINKS_API = "https://docs.google.com/spreadsheets/d/1bvPxXCGQ6kdTCoUB1xMAodT5tgC_-_J84_G_LhnV3NQ/gviz/tq?tqx=out:json&sheet=WEB";
         
         let localMovieDB = [];
         let localMusicDB = [];
         let localTvDB = [];
+        let webLinksDB = {};
         
         let activeSlideIdx = 0;
         let carouselIntervalId = null;
@@ -542,19 +545,18 @@
         let activeProfile = localStorage.getItem('kdk_active_profile') || 'P1';
         let userAge = parseInt(localStorage.getItem('kdk_user_age')) || 18;
 
-        // Double Back Exit Variables
         let backPressTimer = null;
         let isBackPressWarningActive = false;
 
         const premiumLanguagesAssets = [
-            { name: "Telugu", code: "go:TEL" }, { name: "Hindi", code: "go:HIN" },
-            { name: "English", code: "go:ENG" }, { name: "Tamil", code: "go:TAM" }
+            { name: "Telugu", code: "TEL" }, { name: "Hindi", code: "HIN" },
+            { name: "English", code: "ENG" }, { name: "Tamil", code: "TAM" }
         ];
 
-        window.onload = async () => {
-            initCircularNav(); // Boot up Nav Engine
+        window.addEventListener('load', async () => {
+            initCircularNav(); 
             setInterval(updateClock, 60000); updateClock();
-            initHardwareBackButtonManager(); // Initializes Double Tap Exit Logic
+            initHardwareBackButtonManager(); 
             
             const splash = document.getElementById('splashScreen');
             if (!sessionStorage.getItem('kdk_splash_shown')) {
@@ -580,14 +582,13 @@
             buildEcosystem();
             initMatchAnimations();
             initTVRemoteDecoderSystem();
-        };
+        });
 
         // ==========================================
         // HARDWARE BACK BUTTON MANAGER
         // ==========================================
         function initHardwareBackButtonManager() {
             window.history.pushState({ app_state: 'active' }, '', '');
-
             window.addEventListener('popstate', (e) => {
                 if (isModalOpen) {
                     if (activeModalId === 'globalEcosystemPlayer') {
@@ -598,23 +599,14 @@
                     window.history.pushState({ app_state: 'active' }, '', '');
                     return;
                 }
-
                 if (!isBackPressWarningActive) {
                     isBackPressWarningActive = true;
                     showExitWarningToast(); 
-                    
                     window.history.pushState({ app_state: 'active' }, '', '');
-
-                    backPressTimer = setTimeout(() => {
-                        isBackPressWarningActive = false;
-                    }, 2500);
+                    backPressTimer = setTimeout(() => { isBackPressWarningActive = false; }, 2500);
                 } else {
                     clearTimeout(backPressTimer);
-                    if (typeof AppCreator24 !== 'undefined' && AppCreator24.exitApp) {
-                        AppCreator24.exitApp();
-                    } else {
-                        window.close(); 
-                    }
+                    window.close(); 
                 }
             });
         }
@@ -624,7 +616,6 @@
             toast.innerText = "Press BACK again to exit";
             toast.style.cssText = "position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:rgba(0,229,255,0.9); color:#000; padding:12px 24px; border-radius:30px; font-weight:900; z-index:9999999; box-shadow:0 0 20px var(--glow-cyan); transition:opacity 0.3s; font-family:'Inter', sans-serif;";
             document.body.appendChild(toast);
-            
             setTimeout(() => {
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
@@ -637,7 +628,6 @@
         let navElements = [];
         function initCircularNav() {
             const container = document.getElementById('dynamicNavContainer');
-            // Initial setup anchoring Home in slot 3 (index 2) of 5
             const initialOrder = [
                 { id: 'nav-music', icon: 'fa-music', text: 'Music', intent: 'music.html', active: false },
                 { id: 'nav-sports', icon: 'fa-trophy', text: 'Sports', intent: 'sports.html', active: false },
@@ -670,10 +660,6 @@
             setTimeout(() => { window.location.href = intentCode; }, 350);
         }
 
-        function triggerNativeIntentRoute(intentCode) {
-            window.location.href = intentCode;
-        }
-
         function updateClock() {
             const now = new Date();
             let h = now.getHours(), m = now.getMinutes();
@@ -691,7 +677,7 @@
                 document.getElementById('authOverlay').style.display = 'flex';
                 isModalOpen = true; activeModalId = 'authOverlay'; refreshFocusNodesPool();
             } else {
-                document.getElementById('userAgeStatus').innerText = userAge >= 18 ? "18+ Unlocked" : "Under 18 Filter Active";
+                document.getElementById('userAgeStatus').innerText = userAge >= 18 ? "18+ Unlocked" : "Guest Mode Active";
             }
         }
         function submitAuth() {
@@ -702,6 +688,13 @@
             document.getElementById('userAgeStatus').innerText = userAge >= 18 ? "18+ Unlocked" : "Under 18 Filter Active";
             document.getElementById('authOverlay').style.display = 'none';
             isModalOpen = false; activeModalId = ''; refreshFocusNodesPool();
+            fetchAllAPIs().then(() => { buildEcosystem(); }); 
+        }
+        function skipAuth() {
+            document.getElementById('authOverlay').style.display = 'none';
+            isModalOpen = false; activeModalId = ''; refreshFocusNodesPool();
+            userAge = 18; 
+            document.getElementById('userAgeStatus').innerText = "Guest Mode";
             fetchAllAPIs().then(() => { buildEcosystem(); }); 
         }
 
@@ -732,7 +725,20 @@
         }
 
         async function fetchAllAPIs() {
-            // 1. Fetch Movies
+            try {
+                const resWeb = await fetch(WEB_LINKS_API);
+                const txtWeb = await resWeb.text();
+                const jsonWeb = JSON.parse(txtWeb.substring(47).slice(0, -2));
+                jsonWeb.table.rows.forEach(r => {
+                    if(r.c[0] && r.c[2]) {
+                        const code = r.c[0].v.toString().trim();
+                        const logo = r.c[1] && r.c[1].v ? r.c[1].v.toString() : '';
+                        const link = r.c[2].v.toString();
+                        webLinksDB[code] = { logo, link };
+                    }
+                });
+            } catch(e) { console.error("Web Links Pipeline Sync Error", e); }
+
             try {
                 const res1 = await fetch(MOVIE_API);
                 const txt1 = await res1.text();
@@ -748,9 +754,8 @@
                     rating: 'U/A' 
                 }));
                 localMovieDB = userAge < 18 ? localMovieDB.filter(m => m.rating !== 'A') : localMovieDB;
-            } catch(e) { console.error("Movie Pipeline Sync Error", e); }
+            } catch(e) {}
 
-            // 2. Fetch Live TV
             try {
                 const res2 = await fetch(TV_API);
                 const txt2 = await res2.text();
@@ -762,9 +767,8 @@
                     logo: r.c[1] ? r.c[1].v.toString() : 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Star_Maa_Logo_2017.png/200px-Star_Maa_Logo_2017.png',
                     url: 'tv.html'
                 }));
-            } catch(e) { console.error("TV Pipeline Sync Error", e); }
+            } catch(e) {}
 
-            // 3. Fetch Trending Music
             try {
                 const res3 = await fetch(MUSIC_API);
                 const txt3 = await res3.text();
@@ -776,7 +780,7 @@
                     poster: r.c[1] ? r.c[1].v.toString() : 'https://i.ibb.co/6R4pnJmB/image.png',
                     url: 'music.html'
                 }));
-            } catch(e) { console.error("Music Pipeline Sync Error", e); }
+            } catch(e) {}
         }
 
         function buildEcosystem() {
@@ -821,7 +825,6 @@
             setTimeout(() => { heroContainer.classList.add('open'); }, 500);
             if(carouselIntervalId) clearInterval(carouselIntervalId);
             
-            // Fix for Carousel Loop
             let totalSlides = slidePool.length + 1; 
 
             carouselIntervalId = setInterval(() => {
@@ -849,7 +852,7 @@
                 { title: "Trending Hit", poster: "https://i.ibb.co/6R4pnJmB/image.png", url: "music.html" }
             ];
             scroller.innerHTML = musicData.map((m, i) => `
-                <div class="music-rank-card focusable" tabindex="0" onclick="triggerNativeIntentRoute('${m.url}')">
+                <div class="music-rank-card focusable" tabindex="0" onclick="window.location.href='${m.url}'">
                     <div class="music-rank-number">${i + 1}</div>
                     <div class="vinyl-card">
                         <div class="pure-vinyl-disc"><img src="${m.poster}"></div>
@@ -893,9 +896,9 @@
             `).join('');
         }
 
-        function openLanguageHub(langName, intentCode) {
+        function openLanguageHub(langName, webCode) {
             document.getElementById('hubTitle').innerText = `${langName} Hub`;
-            document.getElementById('hubHeroBtn').onclick = () => window.location.href = intentCode;
+            document.getElementById('hubHeroBtn').onclick = () => playWebLink(webCode);
             
             let tv = localTvDB.filter(t => t.name.toLowerCase().includes(langName.toLowerCase()));
             if(tv.length === 0) tv = localTvDB; 
@@ -929,6 +932,15 @@
             toggleModal('languageHub');
         }
 
+        function playWebLink(code) {
+            toggleModal('');
+            if(webLinksDB[code] && webLinksDB[code].link) {
+                executeDirectDynamicEcosystemPlayer(webLinksDB[code].link, code + ' Live Feed');
+            } else {
+                alert('Stream currently not available or offline.');
+            }
+        }
+
         function initMatchAnimations() {
             const animOverlay = document.getElementById('match-anim-overlay');
             if(!animOverlay) return;
@@ -951,9 +963,14 @@
             document.getElementById('playerOsdTitle').innerText = assetTitle;
             overlay.style.display = 'block'; isModalOpen = true; activeModalId = 'globalEcosystemPlayer';
             
-            if(streamUrl.endsWith('.mp4')) {
+            if(streamUrl.endsWith('.mp4') || streamUrl.endsWith('.m3u8')) {
                 render.innerHTML = `<video id="kdkCoreVideoPlaybackInstance" controls autoplay src="${streamUrl}" style="width:100%; height:100%;"></video>`;
                 const video = document.getElementById('kdkCoreVideoPlaybackInstance');
+                if (Hls.isSupported() && streamUrl.endsWith('.m3u8')) {
+                    const hls = new Hls();
+                    hls.loadSource(streamUrl);
+                    hls.attachMedia(video);
+                }
                 video.ontimeupdate = () => storePlaybackTrackingState(assetTitle, streamUrl, video.currentTime, video.duration);
             } else {
                 render.innerHTML = `<iframe src="${streamUrl}" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
