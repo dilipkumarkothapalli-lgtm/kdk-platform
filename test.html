@@ -1,0 +1,959 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <title>TLL TV · Live</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background: #000;
+        overflow: hidden;
+        font-family: "Space Mono", monospace;
+      }
+
+      /* Full-screen YouTube */
+      #yt-wrap {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+      }
+      #yt-wrap iframe {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        border: none;
+        width: 100vw;
+        height: calc(100vw * 9 / 16);
+        min-height: 100vh;
+        min-width: calc(100vh * 16 / 9);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+      }
+      #tap-shield {
+        position: fixed;
+        inset: 0;
+        z-index: 2;
+        cursor: default;
+      }
+
+      /* Vignette */
+      #vignette {
+        position: fixed;
+        inset: 0;
+        z-index: 3;
+        pointer-events: none;
+        background:
+          radial-gradient(
+            ellipse at center,
+            transparent 35%,
+            rgba(0, 0, 0, 0.45) 100%
+          ),
+          linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.55) 0%,
+            transparent 22%,
+            transparent 60%,
+            rgba(0, 0, 0, 0.72) 100%
+          );
+      }
+
+      /* Channel bug */
+      #bug {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 10;
+        pointer-events: none;
+        user-select: none;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+      .bug-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .live-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #e02020;
+        flex-shrink: 0;
+        box-shadow: 0 0 0 0 rgba(224, 32, 32, 0.5);
+        animation: pulse 2s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(224, 32, 32, 0.6);
+        }
+        60% {
+          box-shadow: 0 0 0 9px rgba(224, 32, 32, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(224, 32, 32, 0);
+        }
+      }
+      .logo-txt {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 34px;
+        letter-spacing: 0.14em;
+        line-height: 1;
+        color: #fff;
+        text-shadow:
+          0 0 24px rgba(255, 255, 255, 0.25),
+          0 2px 8px rgba(0, 0, 0, 1);
+      }
+      .logo-txt .tv {
+        color: #f0b020;
+      }
+      .bug-rule {
+        width: calc(100% + 4px);
+        height: 1.5px;
+        margin-left: -2px;
+        background: linear-gradient(
+          90deg,
+          rgba(240, 176, 32, 0.9) 0%,
+          transparent 80%
+        );
+      }
+      #bug-clock {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: rgba(255, 255, 255, 0.82);
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 1);
+      }
+
+      /* LIVE badge */
+      #live-badge {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        padding: 5px 11px;
+        backdrop-filter: blur(8px);
+      }
+      .live-blink {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #e02020;
+        animation: blink 1.4s ease-in-out infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.2;
+        }
+      }
+      .live-txt {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        color: #fff;
+        text-transform: uppercase;
+      }
+
+      /* Program strip */
+      #prog-strip {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        pointer-events: none;
+        padding: 60px 24px 20px;
+        background: linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.75) 0%,
+          transparent 100%
+        );
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        opacity: 0;
+        transition: opacity 0.7s;
+      }
+      #prog-strip.on {
+        opacity: 1;
+      }
+      .now-pill {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #e02020;
+        background: rgba(224, 32, 32, 0.14);
+        border: 1px solid rgba(224, 32, 32, 0.35);
+        border-radius: 3px;
+        padding: 2px 7px;
+        white-space: nowrap;
+        align-self: center;
+      }
+      #prog-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 24px;
+        letter-spacing: 0.07em;
+        color: #fff;
+        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+      }
+      .override-dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #f0b020;
+        margin-right: 8px;
+        vertical-align: middle;
+        box-shadow: 0 0 6px rgba(240, 176, 32, 0.6);
+      }
+
+      /* Progress bar */
+      #prog-track {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 11;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.1);
+        pointer-events: none;
+      }
+      #prog-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #e02020, #f0b020);
+        width: 0%;
+        transition: width 1s linear;
+      }
+
+      /* Admin link */
+      #admin-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 15;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.25);
+        text-decoration: none;
+        padding: 6px 12px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 4px;
+        transition: all 0.2s;
+      }
+      #admin-btn:hover {
+        color: #f0b020;
+        border-color: rgba(240, 176, 32, 0.3);
+      }
+
+      /* Mute overlay */
+      #mute-cover {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.52);
+        cursor: pointer;
+        transition: opacity 0.5s;
+      }
+      #mute-cover.out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .mute-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        background: rgba(10, 10, 14, 0.75);
+        border: 1px solid rgba(240, 176, 32, 0.3);
+        border-radius: 16px;
+        padding: 30px 48px;
+        backdrop-filter: blur(20px);
+        transition:
+          transform 0.2s,
+          background 0.2s;
+      }
+      #mute-cover:hover .mute-card {
+        transform: scale(1.04);
+        background: rgba(10, 10, 14, 0.9);
+      }
+      .mute-icon {
+        font-size: 50px;
+        color: #f0b020;
+      }
+      .mute-hint {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.75);
+      }
+
+      /* Loader */
+      #loader {
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        background: #000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        transition: opacity 0.8s;
+      }
+      #loader.out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .load-logo {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 58px;
+        letter-spacing: 0.16em;
+        color: #fff;
+      }
+      .load-logo span {
+        color: #f0b020;
+      }
+      .load-bar-bg {
+        width: 160px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .load-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #f0b020, #fff8e0);
+        animation: lbar 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+      @keyframes lbar {
+        0% {
+          width: 0%;
+        }
+        100% {
+          width: 100%;
+        }
+      }
+      .load-sub {
+        font-size: 9px;
+        letter-spacing: 0.25em;
+        color: rgba(255, 255, 255, 0.22);
+        text-transform: uppercase;
+      }
+
+      /* Transition flash */
+      #flash {
+        position: fixed;
+        inset: 0;
+        z-index: 25;
+        background: #000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+      #flash.show {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="yt-wrap"><div id="yt-player"></div></div>
+    <div id="tap-shield"></div>
+    <div id="vignette"></div>
+
+    <div id="loader">
+      <div class="load-logo">KDK <span>TV</span></div>
+      <div class="load-bar-bg"><div class="load-bar"></div></div>
+      <div class="load-sub">Tuning in…</div>
+    </div>
+
+    <div id="mute-cover" style="display: none">
+      <div class="mute-card">
+        <span class="material-symbols-outlined mute-icon">volume_up</span>
+        <span class="mute-hint">Tap anywhere to watch</span>
+      </div>
+    </div>
+
+    <div id="flash"></div>
+
+    <div id="bug">
+      <div class="bug-row">
+        <div class="live-dot"></div>
+        <span class="logo-txt">KDK <span class="tv">TV</span></span>
+      </div>
+      <div class="bug-rule"></div>
+      <span id="bug-clock">00:00:00</span>
+    </div>
+
+    <div id="live-badge">
+      <div class="live-blink"></div>
+      <span class="live-txt">Live</span>
+    </div>
+
+    <div id="prog-strip">
+      <span class="now-pill">Now Playing</span>
+      <span id="prog-title">—</span>
+    </div>
+
+    <div id="prog-track"><div id="prog-fill"></div></div>
+    <a href='/tlladmin' id='admin-btn'>⚙ Schedule</a>
+
+    <script>
+      // ══════════════════════════════════════════════════════════════════════
+      //  CONFIG
+      // ══════════════════════════════════════════════════════════════════════
+     
+
+      const SUPABASE_URL = "https://ujpdnorawpflxbvxipmc.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_rUISPJuEsEYIJqPuWpyEPg_sdmg9xa5";
+      const TIMEZONE = "Asia/Kolkata";
+
+      // ══════════════════════════════════════════════════════════════════════
+      //  DEFAULT SCHEDULE — plays every day unless overridden
+      // ══════════════════════════════════════════════════════════════════════
+      const DEFAULT_SCHEDULE = [
+    
+                {
+          streamingTime: "23:26:00",
+          startTime: 0,
+          endTime: 7200,
+          title: "Old Songs",
+          url: "https://youtu.be/qmbYbrrPxbA?si=z7EEK-OconBXcZac",
+        },
+        {
+          streamingTime: "23:12:00",
+          startTime: 0,
+          endTime: 7200,
+          title: "Old Songs",
+          url: "",
+        },
+  
+      ];
+
+      // ══════════════════════════════════════════════════════════════════════
+      //  ENGINE
+      // ══════════════════════════════════════════════════════════════════════
+      const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      let PLAYLIST = [];
+      let ytPlayer = null;
+      let playerReady = false;
+      let playlistReady = false;
+      let currentIdx = -1;
+      let nextTimer = null;
+      let progTimer = null;
+      let isMuted = true;
+      let hasUnmuted = false;
+      let targetSeek = null; // absolute YT seconds we must land on
+      let seekRetryTimer = null; // interval handle for seek polling
+      let seekConfirmed = false; // true once getCurrentTime() is within tolerance
+
+      // ── CRITICAL: switching guard prevents double-fires ──────────────────
+      let isSwitching = false;
+
+      // ── Utilities ────────────────────────────────────────────────────────
+      function t2s(str) {
+        const p = String(str).split(":").map(Number);
+        return p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : 0;
+      }
+      function nowIST() {
+        return new Date(
+          new Date().toLocaleString("en-US", { timeZone: TIMEZONE }),
+        );
+      }
+      function nowSec() {
+        const d = nowIST();
+        return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
+      }
+      function todayStr() {
+        const d = nowIST();
+        return (
+          d.getFullYear() +
+          "-" +
+          String(d.getMonth() + 1).padStart(2, "0") +
+          "-" +
+          String(d.getDate()).padStart(2, "0")
+        );
+      }
+      function ytId(url) {
+        try {
+          const u = new URL(url);
+          if (u.hostname.includes("youtube.com"))
+            return u.searchParams.get("v");
+          if (u.hostname === "youtu.be")
+            return u.pathname.slice(1).split("?")[0];
+        } catch {}
+        return null;
+      }
+
+      // ── Fetch today's overrides from Supabase ────────────────────────────
+      async function fetchOverrides() {
+        try {
+          const { data, error } = await db
+            .from("tll_schedules")
+            .select("*")
+            .eq("scheduled_date", todayStr())
+            .eq("is_played", false)
+            .eq("is_active", true)
+            .order("streaming_time");
+          if (error) throw error;
+          return (data || []).map((r) => ({
+            streamingTime: r.streaming_time,
+            startTime: r.start_time || 0,
+            endTime: r.end_time,
+            title: r.title,
+            url: r.youtube_url,
+            isOverride: true,
+            overrideId: r.id,
+          }));
+        } catch (e) {
+          console.warn(
+            "Supabase unavailable, using default schedule.",
+            e.message,
+          );
+          return [];
+        }
+      }
+
+      async function markPlayed(id) {
+        if (!id) return;
+        try {
+          await db
+            .from("tll_schedules")
+            .update({ is_played: true, played_at: new Date().toISOString() })
+            .eq("id", id);
+        } catch {}
+      }
+
+      // ── Build merged playlist ────────────────────────────────────────────
+      // FIX: If Supabase has ANY entries for today, use them exclusively.
+      // They are designed to cover the full broadcast day, so we don't
+      // mix them with the default schedule (which had mismatched time keys).
+      function buildPlaylist(overrides) {
+        if (overrides.length > 0) {
+          // Use only Supabase overrides — they cover the full day
+          return overrides.sort(
+            (a, b) => t2s(a.streamingTime) - t2s(b.streamingTime),
+          );
+        }
+        // No overrides for today — fall back to the default schedule
+        return DEFAULT_SCHEDULE.map((d) => ({
+          ...d,
+          isOverride: false,
+          overrideId: null,
+        }));
+      }
+
+      // ── Clock ────────────────────────────────────────────────────────────
+      (function tick() {
+        const d = nowIST();
+        document.getElementById("bug-clock").textContent =
+          String(d.getHours()).padStart(2, "0") +
+          ":" +
+          String(d.getMinutes()).padStart(2, "0") +
+          ":" +
+          String(d.getSeconds()).padStart(2, "0");
+        setTimeout(tick, 1000);
+      })();
+
+      // ── Progress bar ─────────────────────────────────────────────────────
+      function startProgress(idx, offset) {
+        clearInterval(progTimer);
+        const total = PLAYLIST[idx].endTime - PLAYLIST[idx].startTime;
+        let elapsed = Math.floor(offset);
+        const fill = document.getElementById("prog-fill");
+        const step = () => {
+          fill.style.width = Math.min((elapsed / total) * 100, 100) + "%";
+          elapsed++;
+        };
+        step();
+        progTimer = setInterval(step, 1000);
+      }
+
+      // ── Stop any in-flight seek retry loop ───────────────────────────────
+      function stopSeekRetry() {
+        if (seekRetryTimer) {
+          clearInterval(seekRetryTimer);
+          seekRetryTimer = null;
+        }
+        seekConfirmed = false;
+      }
+
+      // ── Core: play a program ─────────────────────────────────────────────
+      function playProgram(idx, offset) {
+        if (isSwitching) return;
+        isSwitching = true;
+
+        stopSeekRetry();
+
+        if (nextTimer) {
+          clearTimeout(nextTimer);
+          nextTimer = null;
+        }
+
+        // Mark previous override as played
+        if (currentIdx >= 0 && PLAYLIST[currentIdx]?.isOverride) {
+          markPlayed(PLAYLIST[currentIdx].overrideId);
+        }
+
+        currentIdx = idx;
+        const prog = PLAYLIST[idx];
+        const vid = ytId(prog.url);
+
+        if (!vid) {
+          isSwitching = false;
+          scheduleNext(idx);
+          return;
+        }
+
+        // For DEFAULT schedule: startTime is a genuine video seek offset (e.g. skip 30s intro)
+        // For SUPABASE entries: startTime equals wall-clock seconds from midnight
+        //   (same value as streaming_time in seconds) — NOT a video position.
+        //   These movies always start from 0 in the YouTube video.
+        // We detect Supabase entries via isOverride flag.
+        const videoStartOffset = prog.isOverride ? 0 : prog.startTime || 0;
+        targetSeek = videoStartOffset + Math.floor(offset);
+
+        console.log(
+          `[TLL] playProgram idx=${idx} title="${prog.title}" isOverride=${prog.isOverride} videoStartOffset=${videoStartOffset} offset=${Math.floor(offset)}s → seekTo=${targetSeek}s`,
+        );
+
+        // Update title strip
+        const titleEl = document.getElementById("prog-title");
+        titleEl.innerHTML = prog.isOverride
+          ? `<span class="override-dot"></span>${prog.title}`
+          : prog.title;
+        document.getElementById("prog-strip").classList.add("on");
+        startProgress(idx, offset);
+
+        // Transition flash
+        if (playerReady) {
+          const fl = document.getElementById("flash");
+          fl.classList.add("show");
+          setTimeout(() => fl.classList.remove("show"), 380);
+        }
+
+        if (playerReady) {
+          // Strategy:
+          // 1. loadVideoById with startSeconds as a hint (may be ignored by YT for logged-in users)
+          // 2. onStateChange will catch BUFFERING and PLAYING and call startSeekRetry()
+          // 3. startSeekRetry() hammers seekTo() every 500ms until getCurrentTime() confirms
+          ytPlayer.loadVideoById({ videoId: vid, startSeconds: targetSeek });
+          if (isMuted) ytPlayer.mute();
+          else ytPlayer.unMute();
+        }
+
+        setTimeout(() => {
+          isSwitching = false;
+        }, 2000);
+        scheduleNext(idx);
+      }
+
+      // ── Hammer seekTo until getCurrentTime confirms we landed ─────────────
+      function startSeekRetry() {
+        stopSeekRetry(); // clear any previous loop
+        if (targetSeek === null) return;
+
+        const target = targetSeek;
+        let attempts = 0;
+        const MAX = 40; // 40 × 500ms = 20 seconds max
+
+        console.log(`[TLL] startSeekRetry target=${target}`);
+
+        seekRetryTimer = setInterval(() => {
+          if (seekConfirmed || targetSeek !== target) {
+            // Either confirmed or a new video loaded — stop
+            stopSeekRetry();
+            return;
+          }
+
+          attempts++;
+          if (attempts > MAX) {
+            console.warn(`[TLL] seekRetry gave up after ${MAX} attempts`);
+            stopSeekRetry();
+            return;
+          }
+
+          const cur = ytPlayer.getCurrentTime ? ytPlayer.getCurrentTime() : 0;
+          const state = ytPlayer.getPlayerState
+            ? ytPlayer.getPlayerState()
+            : -1;
+          const diff = Math.abs(cur - target);
+
+          console.log(
+            `[TLL] seekRetry attempt=${attempts} state=${state} cur=${cur.toFixed(1)} target=${target} diff=${diff.toFixed(1)}`,
+          );
+
+          if (diff <= 8) {
+            // Close enough — seek landed
+            seekConfirmed = true;
+            console.log(`[TLL] seekRetry ✓ confirmed at ${cur.toFixed(1)}`);
+            stopSeekRetry();
+            return;
+          }
+
+          // Not there yet — try again
+          ytPlayer.seekTo(target, true);
+        }, 500);
+      }
+
+      // ── Schedule when to switch to the next slot ─────────────────────────
+      function scheduleNext(idx) {
+        if (nextTimer) {
+          clearTimeout(nextTimer);
+          nextTimer = null;
+        }
+
+        const now = nowSec();
+        const nextIdx = (idx + 1) % PLAYLIST.length;
+        const nextAt = t2s(PLAYLIST[nextIdx].streamingTime);
+
+        let ms;
+        if (nextAt > now) {
+          ms = (nextAt - now) * 1000;
+        } else if (nextIdx === 0) {
+          // Wraps past midnight — next item is first in list (tomorrow)
+          ms = (86400 - now + nextAt) * 1000;
+          // At midnight: re-fetch overrides for the new day
+          const msToMidnight = (86400 - now) * 1000;
+          setTimeout(async () => {
+            const overrides = await fetchOverrides();
+            PLAYLIST = buildPlaylist(overrides);
+          }, msToMidnight + 2000);
+        } else {
+          // Fallback: schedule based on duration remaining
+          const p = PLAYLIST[idx];
+          const end = t2s(p.streamingTime) + (p.endTime - p.startTime);
+          ms = Math.max((end - now) * 1000, 5000);
+        }
+
+        nextTimer = setTimeout(() => playProgram(nextIdx, 0), ms + 1500);
+      }
+
+      // ── Find currently airing slot and jump in ───────────────────────────
+      function findAndPlay() {
+        const now = nowSec();
+        let idx = 0;
+
+        // Walk from the end: find last slot that started at or before now
+        for (let i = PLAYLIST.length - 1; i >= 0; i--) {
+          if (t2s(PLAYLIST[i].streamingTime) <= now) {
+            idx = i;
+            break;
+          }
+        }
+
+        const prog = PLAYLIST[idx];
+        const starts = t2s(prog.streamingTime);
+        const dur = prog.endTime - prog.startTime;
+
+        // How many seconds have elapsed since this slot started?
+        const elapsed = now >= starts ? now - starts : now + 86400 - starts;
+
+        if (elapsed >= dur) {
+          // This slot has already finished; play next
+          const next = (idx + 1) % PLAYLIST.length;
+          playProgram(next, 0);
+        } else {
+          // Pass elapsed seconds — playProgram adds prog.startTime to get the
+          // correct absolute seek position inside the YouTube video
+          playProgram(idx, elapsed);
+        }
+      }
+
+      // ── YouTube IFrame API ────────────────────────────────────────────────
+      function onYouTubeIframeAPIReady() {
+        ytPlayer = new YT.Player("yt-player", {
+          width: "100%",
+          height: "100%",
+          playerVars: {
+            autoplay: 1,
+            controls: 0,
+            rel: 0,
+            showinfo: 0,
+            iv_load_policy: 3,
+            modestbranding: 1,
+            fs: 0,
+            playsinline: 1,
+            cc_load_policy: 0,
+            disablekb: 1,
+            origin: window.location.origin,
+          },
+          events: {
+            onReady: onReady,
+            onStateChange: onStateChange,
+            onError: onError,
+          },
+        });
+      }
+
+      function onReady(e) {
+        playerReady = true;
+        e.target.mute();
+
+        // If playlist is already built, start playing immediately.
+        // Otherwise init() will call findAndPlay() once the playlist is ready.
+        if (playlistReady) {
+          findAndPlay();
+        }
+
+        document.getElementById("mute-cover").style.display = "flex";
+        setTimeout(() => {
+          if (!hasUnmuted) doUnmute();
+        }, 1200);
+      }
+
+      function onStateChange(e) {
+        const STATE_NAMES = {
+          "-1": "UNSTARTED",
+          0: "ENDED",
+          1: "PLAYING",
+          2: "PAUSED",
+          3: "BUFFERING",
+          5: "CUED",
+        };
+        console.log(
+          `[TLL] onStateChange state=${e.data} (${STATE_NAMES[e.data] || "?"}) targetSeek=${targetSeek} seekConfirmed=${seekConfirmed}`,
+        );
+
+        // BUFFERING (3) or PLAYING (1) — kick off seek retry loop.
+        // We start on BUFFERING too because for large seeks the player buffers
+        // at the wrong position first; hammering seekTo() during buffering is
+        // exactly what makes it jump to the right spot.
+        if (
+          e.data === YT.PlayerState.BUFFERING ||
+          e.data === YT.PlayerState.PLAYING
+        ) {
+          if (targetSeek !== null && !seekConfirmed) {
+            startSeekRetry();
+          }
+        }
+
+        // PLAYING (1) — after seek is confirmed, stop retrying
+        if (e.data === YT.PlayerState.PLAYING && seekConfirmed) {
+          stopSeekRetry();
+        }
+
+        // ENDED (0) — advance to next slot
+        if (e.data === YT.PlayerState.ENDED && !isSwitching) {
+          if (nextTimer) {
+            clearTimeout(nextTimer);
+            nextTimer = null;
+          }
+          targetSeek = null;
+          stopSeekRetry();
+          playProgram((currentIdx + 1) % PLAYLIST.length, 0);
+        }
+      }
+
+      function onError(e) {
+        console.warn("YT error:", e.data, "— skipping to next");
+        if (nextTimer) {
+          clearTimeout(nextTimer);
+          nextTimer = null;
+        }
+        if (!isSwitching) {
+          setTimeout(
+            () => playProgram((currentIdx + 1) % PLAYLIST.length, 0),
+            2000,
+          );
+        }
+      }
+
+      // ── Unmute ────────────────────────────────────────────────────────────
+      function doUnmute() {
+        if (hasUnmuted) return;
+        hasUnmuted = true;
+        isMuted = false;
+        if (ytPlayer && playerReady) {
+          ytPlayer.unMute();
+          ytPlayer.setVolume(100);
+        }
+        const cover = document.getElementById("mute-cover");
+        cover.classList.add("out");
+        setTimeout(() => (cover.style.display = "none"), 600);
+        const iframe = document.querySelector("#yt-wrap iframe");
+        if (iframe) iframe.style.pointerEvents = "auto";
+        document.getElementById("tap-shield").style.display = "none";
+      }
+
+      document.getElementById("mute-cover").addEventListener("click", doUnmute);
+      document.getElementById("tap-shield").addEventListener("click", doUnmute);
+
+      // ── Loader dismiss ────────────────────────────────────────────────────
+      setTimeout(() => {
+        const lo = document.getElementById("loader");
+        lo.classList.add("out");
+        setTimeout(() => (lo.style.display = "none"), 900);
+      }, 3000);
+
+      // ── Init ─────────────────────────────────────────────────────────────
+      (async function init() {
+        const overrides = await fetchOverrides();
+        PLAYLIST = buildPlaylist(overrides);
+        playlistReady = true;
+
+        // Pre-fill title immediately
+        const now = nowSec();
+        let i = PLAYLIST.length - 1;
+        for (; i >= 0; i--) {
+          if (t2s(PLAYLIST[i].streamingTime) <= now) break;
+        }
+        const cur = PLAYLIST[Math.max(i, 0)];
+        document.getElementById("prog-title").textContent = cur.title;
+        document.getElementById("prog-strip").classList.add("on");
+
+        // If the YT player finished loading before the playlist was ready,
+        // kick off playback now. Otherwise onReady() will handle it.
+        if (playerReady) {
+          findAndPlay();
+        }
+      })();
+    </script>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+  </body>
+</html>
