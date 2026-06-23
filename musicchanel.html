@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KDK MUSIC</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        body { margin: 0; background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        .tv-screen { position: relative; width: 100vw; height: 100vh; background: #000; }
+        
+        .player-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        
+        /* YouTube Standard Iframe Wrapper */
+        #yt-wrapper { position: absolute; inset: 0; display: none; pointer-events: auto; }
+        #yt-player { width: 100%; height: 100%; border: none; }
+        
+        .media-player { width: 100%; height: 100%; border: none; display: none; object-fit: contain; }
+
+        /* PERFECT STATIC LOGO */
+        .top-left-bug { position: absolute; top: 5vh; left: 4vw; z-index: 10; display: flex; align-items: flex-start; gap: 1.5vw; pointer-events: none; }
+        .logo-box { width: 10vw; max-width: 140px; filter: drop-shadow(0 0.5vh 1vh rgba(0,0,0,0.9)); }
+        .logo-box img { width: 100%; object-fit: contain; }
+
+        .bug-info { display: flex; flex-direction: column; padding: 0.5vh 0; }
+        .channel-name { font-size: 3.5vh; font-weight: 900; letter-spacing: 0.2vw; color: #fff; text-shadow: 0.3vh 0.3vh 0.6vh #000; margin-bottom: 0.5vh; text-transform: uppercase; }
+        .badge-row { display: flex; align-items: center; gap: 0.8vw; }
+        .live-badge { background: #ff0000; color: #fff; font-size: 1.8vh; font-weight: bold; padding: 0.3vh 0.8vw; border-radius: 0.4vh; animation: blink 1.5s infinite; }
+        .ultra-badge { background: linear-gradient(135deg, #111, var(--theme-color, #00ffff)); color: #000; font-size: 1.8vh; font-weight: bold; padding: 0.3vh 0.8vw; border-radius: 0.4vh; border: 0.2vh solid #fff;}
+
+        /* GLOWING BREAK FREE BADGE */
+        .top-right-break-free { position: absolute; top: 5vh; right: 4vw; z-index: 50; background: linear-gradient(90deg, #cc0000, #ff0055); border: 0.3vh solid var(--theme-color, #00ffff); color: #fff; font-weight: 900; font-size: 2vh; padding: 0.6vh 1.5vw; border-radius: 3vh; text-transform: uppercase; box-shadow: 0 0 1.5vh rgba(255,0,0,0.8); animation: pulseGlow 2s infinite; letter-spacing: 0.1vw; pointer-events: none; }
+
+        /* CINEMATIC BANNERS */
+        .cinematic-banner-container { position: absolute; bottom: 8vh; left: 4vw; z-index: 20; display: flex; flex-direction: column; gap: 1.5vh; pointer-events: none; }
+        .banner-row { display: flex; align-items: stretch; filter: drop-shadow(0 1vh 2vh rgba(0,0,0,0.8)); }
+        .b-label { background: linear-gradient(135deg, #009999, var(--theme-color, #00ffff)); color: #000; font-weight: 900; font-size: 2.5vh; padding: 1vh 2vw; border-top-left-radius: 1vh; border-bottom-left-radius: 1vh; text-transform: uppercase; display: flex; align-items: center; min-width: 15vw; justify-content: center; }
+        .b-text { background: rgba(0,0,0,0.85); color: #fff; font-size: 3.5vh; font-weight: bold; padding: 1vh 4vw 1vh 2vw; border-top-right-radius: 1vh; border-bottom-right-radius: 1vh; border-right: 0.5vh solid var(--theme-color, #00ffff); text-transform: uppercase; display: flex; align-items: center; white-space: nowrap; }
+        .banner-row.up-next .b-label { background: linear-gradient(135deg, #444, #888); color: #fff; } .banner-row.up-next .b-text { border-right-color: #888; font-size: 2.8vh; color: #ccc; }
+
+        /* MUTE OVERLAY FOR YOUTUBE IFRAMES */
+        #mute-overlay { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.7); cursor: pointer; transition: opacity 0.5s; display: none; }
+        #mute-overlay.hidden { opacity: 0; pointer-events: none; }
+        .mute-btn { background: var(--theme-color, #00ffff); color: #000; font-size: 3vh; font-weight: 900; padding: 2vh 4vw; border-radius: 1vh; text-transform: uppercase; box-shadow: 0 0 2vh #00ffff;}
+
+        /* REVEAL & AD ENGINE */
+        .ad-engine-screen { position: absolute; inset: 0; background: #000; z-index: 80; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        .ad-engine-screen video { width: 100%; height: 100%; object-fit: cover; }
+        
+        .logo-reveal-screen { position: absolute; inset: 0; background: radial-gradient(circle, #003333, #000000); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        .logo-reveal-screen.active { opacity: 1; pointer-events: auto; }
+        .logo-reveal-screen img { width: 35vw; max-width: 400px; filter: drop-shadow(0 0 5vh var(--theme-color, #00ffff)); animation: zoomIn 3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } } 
+        @keyframes pulseGlow { 0%,100% { box-shadow: 0 0 1vh rgba(255,0,0,0.8); transform: scale(1); } 50% { box-shadow: 0 0 3vh rgba(255,0,0,1); transform: scale(1.05); } }
+        @keyframes zoomIn { 0% { transform: scale(0.3) rotate(-10deg); opacity: 0;} 30% { opacity: 1; transform: scale(1.1) rotate(5deg); } 100% { transform: scale(1) rotate(0deg); opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div class="tv-screen">
+        
+        <div class="player-container">
+            <div id="yt-wrapper"><iframe id="yt-player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+            
+            <video id="native-player" class="media-player" playsinline></video>
+        </div>
+
+        <div id="mute-overlay">
+            <div class="mute-btn">Tap to Turn On Sound</div>
+        </div>
+
+        <div class="top-left-bug">
+            <div class="logo-box"><img id="dyn-logo" src="https://i.ibb.co/cjxYmPM/MUSIC-2-Photoroom.png" alt="CHANNEL"></div>
+            <div class="bug-info">
+                <div class="channel-name" id="dyn-name">KDK MUSIC</div>
+                <div class="badge-row"><span class="live-badge">🔴 LIVE</span><span class="ultra-badge">4K ULTRA</span></div>
+            </div>
+        </div>
+
+        <div class="top-right-break-free">⚡ BREAK FREE</div>
+
+        <div class="cinematic-banner-container">
+            <div class="banner-row"><div class="b-label">NOW PLAYING</div><div class="b-text" id="b-now">Loading Data...</div></div>
+            <div class="banner-row up-next"><div class="b-label">UP NEXT</div><div class="b-text" id="b-next">Fetching Schedule...</div></div>
+        </div>
+
+        <div class="logo-reveal-screen" id="reveal-screen"><img id="dyn-reveal" src="https://i.ibb.co/cjxYmPM/MUSIC-2-Photoroom.png"></div>
+        <div class="ad-engine-screen" id="ad-engine"><video id="ad-video" src="https://cdn.pixabay.com/video/2020/05/25/40134-424881062_tiny.mp4" loop muted playsinline></video></div>
+    </div>
+    
+    <script>
+        const CONFIG = {
+            id: 'music', 
+            themeColor: '#00ffff' 
+        };
+        document.documentElement.style.setProperty('--theme-color', CONFIG.themeColor);
+        const db = window.supabase.createClient("https://ujpdnorawpflxbvxipmc.supabase.co", "sb_publishable_rUISPJuEsEYIJqPuWpyEPg_sdmg9xa5");
+
+        let ytIsMuted = true;
+
+        // --- HANDLE TAP TO UNMUTE ---
+        document.getElementById('mute-overlay').addEventListener('click', function() {
+            this.classList.add('hidden');
+            ytIsMuted = false;
+            
+            document.getElementById('native-player').muted = false;
+            
+            // Post message to YouTube Iframe to unmute
+            const ytIframe = document.getElementById('yt-player');
+            if(ytIframe && ytIframe.contentWindow) {
+                ytIframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+                ytIframe.contentWindow.postMessage('{"event":"command","func":"setVolume","args":[100]}', '*');
+            }
+        });
+
+        // --- SMART IFRAME & URL ROUTER ---
+        function loadStream(inputStr) {
+            const ytWrap = document.getElementById('yt-wrapper');
+            const ytIframe = document.getElementById('yt-player');
+            const nat = document.getElementById('native-player');
+            const muteOverlay = document.getElementById('mute-overlay');
+            
+            // Reset state
+            ytWrap.style.display = 'none';
+            nat.style.display = 'none';
+            muteOverlay.style.display = 'none';
+            nat.pause();
+            ytIframe.src = ""; 
+            
+            if(!inputStr) return;
+
+            let url = inputStr;
+
+            // SMART PARSER: Check if user pasted an entire <iframe> code from YouTube
+            if(inputStr.includes('<iframe') && inputStr.includes('src=')) {
+                const match = inputStr.match(/src="([^"]+)"/);
+                if(match && match[1]) { url = match[1]; }
+            }
+
+            // YouTube Detection (either extracted from iframe or direct youtube.com link)
+            if(url.includes("youtube.com") || url.includes("youtu.be")) { 
+                ytWrap.style.display = 'block';
+                if(ytIsMuted) muteOverlay.style.display = 'flex';
+                
+                // If it is already an embed link (from an iframe snippet)
+                if(url.includes("/embed/")) {
+                    // Ensure JS API and Autoplay parameters exist
+                    if(!url.includes("autoplay=1")) url += (url.includes('?') ? '&' : '?') + "autoplay=1";
+                    if(!url.includes("enablejsapi=1")) url += "&enablejsapi=1";
+                    if(ytIsMuted && !url.includes("mute=1")) url += "&mute=1";
+                    
+                    ytIframe.src = url;
+                } else {
+                    // Convert standard link to embed
+                    let vidId = url.split("v=")[1]?.split("&")[0] || url.split("/").pop();
+                    let embedUrl = `https://www.youtube.com/embed/${vidId}?autoplay=1&enablejsapi=1`;
+                    if(ytIsMuted) embedUrl += "&mute=1";
+                    
+                    ytIframe.src = embedUrl;
+                }
+            }
+            // M3U8 / MP4 Native Detection
+            else {
+                nat.style.display = 'block';
+                nat.muted = ytIsMuted;
+                if(ytIsMuted) muteOverlay.style.display = 'flex';
+                
+                if(url.includes(".m3u8") || url.includes("hls") || url.includes(".m3u")) { 
+                    if(Hls.isSupported()){
+                        const h = new Hls(); h.loadSource(url); h.attachMedia(nat);
+                        h.on(Hls.Events.MANIFEST_PARSED, () => nat.play());
+                    } else { nat.src = url; nat.play(); } 
+                }
+                else { nat.src = url; nat.play(); } 
+            }
+        }
+
+        function nSec(){ const d=new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"})); return d.getHours()*3600+d.getMinutes()*60+d.getSeconds(); }
+        
+        function triggerReveal() {
+            const rev = document.getElementById('reveal-screen');
+            rev.classList.add('active'); setTimeout(() => rev.classList.remove('active'), 3000);
+        }
+
+        let adTimer = null; let isAdPlaying = false;
+        function playAd(durationSec) {
+            if(isAdPlaying) return; isAdPlaying = true;
+            const adEngine = document.getElementById('ad-engine'); const adVid = document.getElementById('ad-video'); const nat = document.getElementById('native-player'); const ytIframe = document.getElementById('yt-player');
+            
+            adEngine.style.opacity = '1'; adEngine.style.pointerEvents = 'auto'; adVid.play().catch(e=>{});
+            
+            // Pause underlying videos via API
+            if(!nat.paused) nat.pause();
+            if(ytIframe && ytIframe.contentWindow) ytIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+            
+            setTimeout(() => { 
+                adVid.pause(); adEngine.style.opacity = '0'; adEngine.style.pointerEvents = 'none'; 
+                if(nat.src && nat.style.display !== 'none') nat.play().catch(e=>{}); 
+                if(ytIframe && ytIframe.contentWindow && document.getElementById('yt-wrapper').style.display !== 'none') ytIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+                isAdPlaying = false; 
+            }, durationSec * 1000);
+        }
+
+        let cId=null;
+        async function fetchSchedule() {
+            const d=new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"})); const dStr=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            const {data} = await db.from('kdk_schedules').select('*').eq('scheduled_date', dStr).eq('channel', CONFIG.id).order('streaming_time');
+            if(data && data.length > 0) {
+                const now=nSec(); let idx=-1; for(let i=data.length-1; i>=0; i--) { if((String(data[i].streaming_time).split(':').map(Number)[0]*3600+String(data[i].streaming_time).split(':').map(Number)[1]*60)<=now){idx=i;break;} }
+                
+                if(idx!==-1 && cId!==data[idx].id) { 
+                    cId=data[idx].id; 
+                    triggerReveal(); 
+                    document.getElementById('b-now').innerText = data[idx].title; 
+                    document.getElementById('b-next').innerText = (idx + 1 < data.length) ? data[idx+1].title : "STAY TUNED";
+                    
+                    loadStream(data[idx].media_url); 
+
+                    clearInterval(adTimer);
+                    const adInt = data[idx].ad_interval || 0;
+                    const adDur = data[idx].ad_duration || 15;
+                    if(adInt > 0) { adTimer = setInterval(() => playAd(adDur), adInt * 60000); }
+                }
+            }
+        }
+        window.onload=()=>{fetchSchedule(); setInterval(fetchSchedule, 15000);};
+    </script>
+</body>
+</html>
